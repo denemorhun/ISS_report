@@ -80,10 +80,13 @@ def get_location():
     print(f"The ISS is currently at {latitude},{longitude} at {time_at_loc} UTC.")
 
     # print human readable address
-    geolocator = Nominatim(user_agent="iss report")
-    location = geolocator.reverse(f"{latitude}, {longitude}")
-    print("The ISS is approximately over the following address!")
-    print(location.address)
+    try:
+        geolocator = Nominatim(user_agent="ISS")
+        location = geolocator.reverse(f"{latitude}, {longitude}")
+        print("The ISS is approximately over the following address!")
+        print(location.address)
+    except:
+        print("An approximate address could not be found.")
 
 ###############################################################################
 # Display the duration of the ISS at <latitude><longitude>
