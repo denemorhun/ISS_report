@@ -8,15 +8,15 @@
 
 ISS Python script accepts the following command line argument to print the expected results
 
-# loc
+# -l. --location
     - print the current location of the ISS
     Example: “The ISS current location at {time} is {LAT, LONG}”
 
-# nextpass:
+# -n, --nextpass:
 print the passing details of the ISS for a given location
 Example: “The ISS will be overhead {LAT, LONG} at {time} for {duration}”
 
-# people
+# -p, --people
 for each craft print the details of those people that are currently in space
 Example: “There are {number} people aboard the {craft}. They are {name[0]}…{name[n]}”
 
@@ -25,6 +25,9 @@ Example: “There are {number} people aboard the {craft}. They are {name[0]}…{
 import requests, pytz, argparse
 from datetime import datetime
 
+###############################################################################
+# Commandline arguments selection menu
+###############################################################################
 def make_selection():
 
  # create a parser
@@ -32,17 +35,18 @@ def make_selection():
 
     #next pass taking exactly two parameters for latitude and longitude
     parser.add_argument('-n','--nextpass', required=False, metavar='l', type=float, nargs=2,
-                        help='Position of the ISS, input lat, long')
+                        help='Next duration of the ISS at <latitude>, <longitude>.')
 
     parser.add_argument('-p','--people', required=False, action='store_true',
-                        help='display the people on board the craft')
+                        help='Display the people aboard the craft.')
 
-    parser.add_argument('-l', '--location', action='store_true', required=False, help='display the current ISS location')
+    parser.add_argument('-l', '--location', action='store_true', 
+                        required=False, help='Display the current ISS location at point in time.')
 
     args = parser.parse_args()
 
     if args.location == True:
-        get_position()
+        get_location()
 
     if args.people == True:
         get_people()
@@ -50,7 +54,10 @@ def make_selection():
     if args.nextpass != None:
         get_next_pass( args.nextpass[0], args.nextpass[1] )
 
-def get_position():
+###############################################################################
+# Get current location of the ISS at a point in time
+###############################################################################
+def get_location():
 
     # Get the request and convert to json object
     pos_url = 'http://api.open-notify.org/iss-now.json'
@@ -65,6 +72,9 @@ def get_position():
     print(f"The current ISS location at {time_at_loc} UTC is at", 
           f"latitude: {latitude},", f"longitude: {longitude}")
 
+###############################################################################
+# Display the duration of the ISS at <latitude><longitude>
+###############################################################################
 def get_next_pass(latitude, longitude):
     iss_url = 'http://api.open-notify.org/iss-pass.json'
     location = {'latitude': latitude, 'longitude': longitude}
@@ -84,26 +94,29 @@ def get_next_pass(latitude, longitude):
     else:
         print(f'No ISS flyby can be determined for {latitude}, {longitude}')
 
+###############################################################################
+# Display the people aboard the craft
+###############################################################################
 def get_people():
-    peoples_url = 'http://api.open-notify.org/astros.json'
-    response = requests.get(peoples_url).json()
+    astros_url = 'http://api.open-notify.org/astros.json'
+    response = requests.get(astros_url).json()
  
     number = int(response['number'])
     craft = response["people"][0]['craft']
-   
-    print("craft: ", response["people"][0]['craft'])
 
-    print(f'There are {number} people aboard the {craft}')
-
+    print(f'There are {number} people aboard the {craft}.')
+    print("The astronauts in space:")
+    # print the names of the astronauts
     i = 0
     while i < number:
-        person = response['people'][i]['name']
-        print(f'Astronaut in space: {person}')
+        astronaut = response['people'][i]['name']
+        print(astronaut)
         i += 1
 
+###############################################################################
+# Driver Code
+###############################################################################
 def main():
-    # define a variable to hold the source URL
-    # get_next_pass(37.7833, -122.4167)
 
     make_selection()
 
