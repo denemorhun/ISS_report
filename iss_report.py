@@ -70,7 +70,7 @@ def get_location():
     
     location = {'latitude': response['iss_position']['latitude'], 'longitude': response['iss_position']['longitude']}
 
-    print(f"The ISS at {time_at_loc} UTC is at {location}")
+    print(f"The ISS is currently at {location}, at {time_at_loc} UTC.")
 
 ###############################################################################
 # Display the duration of the ISS at <latitude><longitude>
