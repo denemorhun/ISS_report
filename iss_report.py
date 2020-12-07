@@ -25,19 +25,21 @@ Example: “There are {number} people aboard the {craft}. They are {name[0]}…{
 import requests, pytz, argparse
 from datetime import datetime
 
-def get_next_pass(lat, long):
+def get_next_pass(latitude, longitude):
     iss_url = 'http://api.open-notify.org/iss-pass.json'
-    location = {'lat': lat, 'longitude': long}
+    location = {'latitude': latitude, 'longitude': longitude}
     response = requests.get(iss_url, params=location).json()
+
+    print("Response", response)
 
     if 'response' in response:
         next_pass = response['response'][0]['risetime']
         next_pass_datetime = datetime.fromtimestamp(next_pass, tz=pytz.utc)
-        print(f'Next pass for {lat}, {long} is: {next_pass_datetime}')
+        print(f'Next pass for {latitude}, {longitude} is: {next_pass_datetime}')
              
         print( next_pass_datetime)
     else:
-        print(f'No ISS flyby can be determined for {lat}, {long}')
+        print(f'No ISS flyby can be determined for {latitude}, {longitude}')
 
 def get_people():
     peoples_url = 'http://api.open-notify.org/astros.json'
@@ -60,10 +62,19 @@ def get_people():
         i += 1
 
 def get_position():
+
+    # Get the request and convert to json object
     pos_url = 'http://api.open-notify.org/iss-now.json'
     response = requests.get(pos_url).json()
-    print("The current position of the ISS is at longitude: ", 
-            response['iss_position']['longitude'], " latitude: ", response['iss_position']['latitude'])
+
+    # Convert the timestamp from json to UTC format
+    time_at_loc = datetime.utcfromtimestamp(response['timestamp']).strftime("%T, %D")
+    
+    longitude = response['iss_position']['longitude']
+    latitude = response['iss_position']['latitude']
+
+    print(f"The current ISS location at {time_at_loc} UTC is at", 
+          f"latitude: {latitude},", f"longitude: {longitude}")
 
 def cli_args():
 
