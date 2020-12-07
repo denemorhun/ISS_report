@@ -76,14 +76,25 @@ def get_location():
 # Display the duration of the ISS at <latitude><longitude>
 ###############################################################################
 def get_next_pass(latitude, longitude):
-    iss_url = 'http://api.open-notify.org/iss-pass.json'
-    location = {'latitude': latitude, 'longitude': longitude}
-    # response = requests.get(iss_url, params=location).json()
 
-    #print("Response", response)
+    if latitude < -90.0 or latitude > 90.0:
+        print("Latitude must be number between -90.0 and 90.0.")
+        return
+    
+    if longitude < -180.0 and longitude > 180.0:
+        print("Longitude must be number between -180.0 and 180.0")
+        return
 
-    for k, v in response.items():
-        print(f'keys {k} : values {v}')
+    try:
+        iss_url = 'http://api.open-notify.org/iss-pass.json'
+        location = {'lat': latitude, 'lon': longitude}
+        print(location)
+        response = requests.get(iss_url, params=location).json()
+        # response = requests.get(iss_url).json()
+        print("Response", response)
+    
+    except:
+        print("Unacceptable input has been entered.")
 
     # if 'response' in response:
     #     next_pass = response['response'][0]['risetime']
