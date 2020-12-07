@@ -11,6 +11,7 @@ ISS Python script accepts the following command line argument to print the expec
 # -l. --location
     - print the current location of the ISS
     Example: “The ISS current location at {time} is {LAT, LONG}”
+    Bonus: An approximate human readable address is also provided.
 
 # -n, --nextpass:
 print the passing details of the ISS for a given location
@@ -24,6 +25,8 @@ Example: “There are {number} people aboard the {craft}. They are {name[0]}…{
 
 import requests, argparse
 from datetime import datetime
+from geopy.geocoders import Nominatim
+
 
 ###############################################################################
 # Commandline arguments selection menu
@@ -67,10 +70,20 @@ def get_location():
 
     # Convert the timestamp from json to UTC format
     time_at_loc = datetime.utcfromtimestamp(response['timestamp']).strftime("%T, %D")
-    
-    location = {'latitude': response['iss_position']['latitude'], 'longitude': response['iss_position']['longitude']}
 
-    print(f"The ISS is currently at {location}, at {time_at_loc} UTC.")
+    latitude = response['iss_position']['latitude']
+    longitude = response['iss_position']['longitude']
+    
+    location = {'latitude': latitude, 'longitude': longitude}
+
+    # print the coordinates at a given time
+    print(f"The ISS is currently at {latitude},{longitude} at {time_at_loc} UTC.")
+
+    # print human readable address
+    geolocator = Nominatim(user_agent="iss report")
+    location = geolocator.reverse(f"{latitude}, {longitude}")
+    print("The ISS is approximately over the following address!")
+    print(location.address)
 
 ###############################################################################
 # Display the duration of the ISS at <latitude><longitude>
@@ -94,7 +107,8 @@ def get_next_pass(latitude, longitude):
     # The first response at [0] will have the data for the next flyby
     duration = response['response'][0]['duration']
     next_pass_dt = datetime.fromtimestamp(response['response'][0]['risetime'])
-    print(f'Date for next ISS pass at coordinates {latitude}, {longitude} is at: {next_pass_dt} for {duration} seconds.')
+    print(f'Date for next ISS pass at coordinates {latitude}, {longitude} is at:')
+    print(f'{next_pass_dt} for {duration} seconds.')
 
 ###############################################################################
 # Display the people aboard the craft
