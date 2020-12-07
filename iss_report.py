@@ -25,58 +25,7 @@ Example: “There are {number} people aboard the {craft}. They are {name[0]}…{
 import requests, pytz, argparse
 from datetime import datetime
 
-def get_next_pass(latitude, longitude):
-    iss_url = 'http://api.open-notify.org/iss-pass.json'
-    location = {'latitude': latitude, 'longitude': longitude}
-    response = requests.get(iss_url, params=location).json()
-
-    print("Response", response)
-
-    if 'response' in response:
-        next_pass = response['response'][0]['risetime']
-        next_pass_datetime = datetime.fromtimestamp(next_pass, tz=pytz.utc)
-        print(f'Next pass for {latitude}, {longitude} is: {next_pass_datetime}')
-             
-        print( next_pass_datetime)
-    else:
-        print(f'No ISS flyby can be determined for {latitude}, {longitude}')
-
-def get_people():
-    peoples_url = 'http://api.open-notify.org/astros.json'
-    response = requests.get(peoples_url).json()
- 
-    number = int(response['number'])
-    craft = response["people"][0]['craft']
-
-    # for k, v in response.items():
-    #     print(f'keys {k} : values {v}')
-   
-    print("craft: ", response["people"][0]['craft'])
-
-    print(f'There are {number} people aboard the {craft}')
-
-    i = 0
-    while i < number:
-        person = response['people'][i]['name']
-        print(f'Astronaut in space: {person}')
-        i += 1
-
-def get_position():
-
-    # Get the request and convert to json object
-    pos_url = 'http://api.open-notify.org/iss-now.json'
-    response = requests.get(pos_url).json()
-
-    # Convert the timestamp from json to UTC format
-    time_at_loc = datetime.utcfromtimestamp(response['timestamp']).strftime("%T, %D")
-    
-    longitude = response['iss_position']['longitude']
-    latitude = response['iss_position']['latitude']
-
-    print(f"The current ISS location at {time_at_loc} UTC is at", 
-          f"latitude: {latitude},", f"longitude: {longitude}")
-
-def cli_args():
+def make_selection():
 
  # create a parser
     parser = argparse.ArgumentParser(description='Return info about the ISS.')
@@ -101,11 +50,61 @@ def cli_args():
     if args.nextpass != None:
         get_next_pass( args.nextpass[0], args.nextpass[1] )
 
+def get_position():
+
+    # Get the request and convert to json object
+    pos_url = 'http://api.open-notify.org/iss-now.json'
+    response = requests.get(pos_url).json()
+
+    # Convert the timestamp from json to UTC format
+    time_at_loc = datetime.utcfromtimestamp(response['timestamp']).strftime("%T, %D")
+    
+    longitude = response['iss_position']['longitude']
+    latitude = response['iss_position']['latitude']
+
+    print(f"The current ISS location at {time_at_loc} UTC is at", 
+          f"latitude: {latitude},", f"longitude: {longitude}")
+
+def get_next_pass(latitude, longitude):
+    iss_url = 'http://api.open-notify.org/iss-pass.json'
+    location = {'latitude': latitude, 'longitude': longitude}
+    response = requests.get(iss_url, params=location).json()
+
+    print("Response", response)
+
+    for k, v in response.items():
+        print(f'keys {k} : values {v}')
+
+    if 'response' in response:
+        next_pass = response['response'][0]['risetime']
+        next_pass_datetime = datetime.fromtimestamp(next_pass, tz=pytz.utc)
+        print(f'Next pass for {latitude}, {longitude} is: {next_pass_datetime}')
+             
+        print( next_pass_datetime)
+    else:
+        print(f'No ISS flyby can be determined for {latitude}, {longitude}')
+
+def get_people():
+    peoples_url = 'http://api.open-notify.org/astros.json'
+    response = requests.get(peoples_url).json()
+ 
+    number = int(response['number'])
+    craft = response["people"][0]['craft']
+   
+    print("craft: ", response["people"][0]['craft'])
+
+    print(f'There are {number} people aboard the {craft}')
+
+    i = 0
+    while i < number:
+        person = response['people'][i]['name']
+        print(f'Astronaut in space: {person}')
+        i += 1
 
 def main():
     # define a variable to hold the source URL
     # get_next_pass(37.7833, -122.4167)
 
-    cli_args()
+    make_selection()
 
 if __name__ == "__main__": main()
