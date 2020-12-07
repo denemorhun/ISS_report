@@ -22,7 +22,7 @@ Example: “There are {number} people aboard the {craft}. They are {name[0]}…{
 
 '''
 
-import requests, pytz, argparse
+import requests, argparse
 from datetime import datetime
 
 ###############################################################################
@@ -79,31 +79,21 @@ def get_next_pass(latitude, longitude):
 
     if latitude < -90.0 or latitude > 90.0:
         print("Latitude must be number between -90.0 and 90.0.")
-        return
+        return 0
     
-    if longitude < -180.0 and longitude > 180.0:
+    if longitude < -180.0 or longitude > 180.0:
         print("Longitude must be number between -180.0 and 180.0")
-        return
+        return 0
 
-    try:
-        iss_url = 'http://api.open-notify.org/iss-pass.json'
-        location = {'lat': latitude, 'lon': longitude}
-        print(location)
-        response = requests.get(iss_url, params=location).json()
-        # response = requests.get(iss_url).json()
-        print("Response", response)
-    
-    except:
-        print("Unacceptable input has been entered.")
+    iss_url = 'http://api.open-notify.org/iss-pass.json'
+    location = {"lat": latitude, "lon": longitude}
 
-    # if 'response' in response:
-    #     next_pass = response['response'][0]['risetime']
-    #     next_pass_datetime = datetime.fromtimestamp(next_pass, tz=pytz.utc)
-    #     print(f'Next pass for {latitude}, {longitude} is: {next_pass_datetime}')
-             
-    #     print( next_pass_datetime)
-    # else:
-    #     print(f'No ISS flyby can be determined for {latitude}, {longitude}')
+    response = requests.get(iss_url, params=location).json()
+
+    # The first response will have the data for the next flyby
+    duration = response['response'][0]['duration']
+    next_pass_dt = datetime.fromtimestamp(response['response'][0]['risetime'])
+    print(f'Next pass for {location} is: {next_pass_dt} for {duration} seconds.')
 
 ###############################################################################
 # Display the people aboard the craft
