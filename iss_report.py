@@ -88,12 +88,13 @@ def get_next_pass(latitude, longitude):
     iss_url = 'http://api.open-notify.org/iss-pass.json'
     location = {"lat": latitude, "lon": longitude}
 
+    # Get the flyby url and convert into json
     response = requests.get(iss_url, params=location).json()
 
-    # The first response will have the data for the next flyby
+    # The first response at [0] will have the data for the next flyby
     duration = response['response'][0]['duration']
     next_pass_dt = datetime.fromtimestamp(response['response'][0]['risetime'])
-    print(f'Next pass for {location} is: {next_pass_dt} for {duration} seconds.')
+    print(f'Date for next ISS pass at coordinates {latitude}, {longitude} is at: {next_pass_dt} for {duration} seconds.')
 
 ###############################################################################
 # Display the people aboard the craft
