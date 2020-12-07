@@ -30,7 +30,7 @@ from datetime import datetime
 ###############################################################################
 def make_selection():
 
- # create a parser
+    # create a parser
     parser = argparse.ArgumentParser(description='Return info about the ISS.')
 
     #next pass taking exactly two parameters for latitude and longitude
@@ -43,14 +43,16 @@ def make_selection():
     parser.add_argument('-l', '--location', action='store_true', 
                         required=False, help='Display the current ISS location at point in time.')
 
+    # parse the arguments
     args = parser.parse_args()
 
-    if args.location == True:
+    if args.location:
         get_location()
 
-    if args.people == True:
+    if args.people:
         get_people()
 
+    # <latitude>, <longitude>
     if args.nextpass != None:
         get_next_pass( args.nextpass[0], args.nextpass[1] )
 
@@ -66,11 +68,9 @@ def get_location():
     # Convert the timestamp from json to UTC format
     time_at_loc = datetime.utcfromtimestamp(response['timestamp']).strftime("%T, %D")
     
-    longitude = response['iss_position']['longitude']
-    latitude = response['iss_position']['latitude']
+    location = {'latitude': response['iss_position']['latitude'], 'longitude': response['iss_position']['longitude']}
 
-    print(f"The current ISS location at {time_at_loc} UTC is at", 
-          f"latitude: {latitude},", f"longitude: {longitude}")
+    print(f"The ISS at {time_at_loc} UTC is at {location}")
 
 ###############################################################################
 # Display the duration of the ISS at <latitude><longitude>
@@ -78,21 +78,21 @@ def get_location():
 def get_next_pass(latitude, longitude):
     iss_url = 'http://api.open-notify.org/iss-pass.json'
     location = {'latitude': latitude, 'longitude': longitude}
-    response = requests.get(iss_url, params=location).json()
+    # response = requests.get(iss_url, params=location).json()
 
-    print("Response", response)
+    #print("Response", response)
 
     for k, v in response.items():
         print(f'keys {k} : values {v}')
 
-    if 'response' in response:
-        next_pass = response['response'][0]['risetime']
-        next_pass_datetime = datetime.fromtimestamp(next_pass, tz=pytz.utc)
-        print(f'Next pass for {latitude}, {longitude} is: {next_pass_datetime}')
+    # if 'response' in response:
+    #     next_pass = response['response'][0]['risetime']
+    #     next_pass_datetime = datetime.fromtimestamp(next_pass, tz=pytz.utc)
+    #     print(f'Next pass for {latitude}, {longitude} is: {next_pass_datetime}')
              
-        print( next_pass_datetime)
-    else:
-        print(f'No ISS flyby can be determined for {latitude}, {longitude}')
+    #     print( next_pass_datetime)
+    # else:
+    #     print(f'No ISS flyby can be determined for {latitude}, {longitude}')
 
 ###############################################################################
 # Display the people aboard the craft
